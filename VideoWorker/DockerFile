@@ -1,0 +1,16 @@
+from node
+
+WORKDIR /streaming/Worker
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+ENV NODE_ENV=production
+
+CMD ["node", "server.js"]
+
+# docker build -t  VideoWorker .
+# docker run --env-file .env -d VideoWorker
