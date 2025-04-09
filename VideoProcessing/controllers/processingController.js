@@ -1,4 +1,4 @@
-import { processVideo } from "../utils/videoProcessor";
+import { processVideo } from "../utils/videoProcessor.js";
 
 export const processVideoHandler = async(req, res)=>{
     try{
