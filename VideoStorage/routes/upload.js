@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import { videoQueue } from "../queues/VideoQueue.js";
 import { uploadToS3 } from "../utils/s3Uploader.js";
+import { Video } from "../Models/VideoModal.js";
 
 const router= express.Router();
 
@@ -14,6 +15,11 @@ router.post("/", upload.single("video"), async(req, res)=>{
             return res.status(400).json({"message": "No Video Is Uploaded"});
         }
      
+    const filename= req.file.originalname;
+    const fileBuffer= req.file.buffer;
+    const fileSize= req.file.size;
+    const fileFormat=  filename.split(".").pop();
+    
     const s3Url=  await uploadToS3(filename, fileBuffer);
     console.log(`Enqueuing ${filename} for processing..`);
    
@@ -22,6 +28,13 @@ router.post("/", upload.single("video"), async(req, res)=>{
         s3Url
    });
       
+    // saving the Data of the Files in the MetaData of the User
+    const video= new Video({
+        filename,
+        originalS3Url: s3Url,
+        size: fileSize,
+        format: fileFormat
+    })
     
         return res.status(200).json({"message": "Video uploaded and Added TO Queue", s3Url});
     }

@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
 import dotenv from "dotenv";
 import { processVideo } from "./services/videoProcessor.js";
+import { connectDB } from "./db.js";
 
 dotenv.config();
 
@@ -17,6 +18,8 @@ const videoWorker = new Worker(
       },
     }
   );
+
+  connectDB();
   
   videoWorker.on("completed", (job) => {
     console.log(`Job completed: ${job.id}`);
