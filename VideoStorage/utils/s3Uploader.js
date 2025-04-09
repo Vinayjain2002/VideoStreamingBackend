@@ -8,6 +8,15 @@ const s3 = new S3Client({
   },
 });
 
+async function testS3Connection() {
+  try {
+    const data = await s3.listBuckets({});
+    console.log('Successfully connected to AWS S3 in region:', process.env.AWS_REGION);
+  } catch (error) {
+    console.error('Error connecting to AWS S3:', error.message);
+  }
+}
+
 export const uploadToS3 = async (filename, fileBuffer) => {
   const uploadParams = {
     Bucket: process.env.S3_BUCKET_NAME,
@@ -19,3 +28,4 @@ export const uploadToS3 = async (filename, fileBuffer) => {
   const command = new PutObjectCommand(uploadParams);
   await s3.send(command);
 };
+testS3Connection();

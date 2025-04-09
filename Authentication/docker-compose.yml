@@ -1,0 +1,41 @@
+version: '1.0'
+
+services:
+  app:
+    build: .
+    container_name: authentication
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=localhost
+      - DB_USER=root
+      - DB_PASSWORD=Vinay@2002
+      - DB_NAME=videostreaming
+      - DB_DIALECT=mysql  
+      - REFRESH_SECRET="RefreshSecret@1234"
+      
+      - DB_NAME=your_database
+      PORT=5000
+      - ACCESS_SECRET="AccessSecret!ef,endskl;dml532"
+
+  db:
+    image: mysql:latest
+    container_name: AuthenticationSQL
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: videostreaming
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Vinay@2002
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

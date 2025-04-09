@@ -1,0 +1,17 @@
+FROM node
+# Set working directory
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package.json package-lock.json ./
+
+RUN npm install
+
+# Copy application code
+COPY . .
+
+# Expose port (for WebSocket)
+EXPOSE 5000
+
+# Start the worker
+CMD ["node", "server.js"]
