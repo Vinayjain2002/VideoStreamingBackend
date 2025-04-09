@@ -5,7 +5,7 @@ import { sendPushNotification, sendSocketNotification,isUserOnline } from "./ser
 const notificationWorker= new Worker("notifications", async(job)=>{
     const {users, message}= job.data;
     for (const userID of users){
-        const online= await isUserOnLine(userID);
+        const online= await isUserOnline(userID);
 
         if(online){
             await sendSocketNotification(userID, message);
