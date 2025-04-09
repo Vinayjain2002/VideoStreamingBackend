@@ -18,22 +18,42 @@ const getBestQuality= (resolutions, quality)=>{
 router.get("/stream/:videoID", async (req, res)=>{
     try{
         const {videoID}= req.params;
+        const range= req.headers.range;
+        if(!range){
+            return res.status(400).json({"message": "Range Header Required"});
+        }
+
         const {quality, loaction}= req.query;
 
         const video= await Video.findById(videoID);
         if(!video){
             return res.status(404).json({"message": "Video Not Found"});
         }
+
         const selectedQuality= getBestQuality(video.resolutions, quality);  
         console.log(`🎥 Streaming Video: ${video.filename}, Quality: ${selectedQuality.resolution}`);
+        const s3Url = selectedQuality.s3Url; // The S3 URL for the requested video resolution
 
-        const videoStream= await axios.get(selectedQuality.s3Url, {responseType: "stream"});
+         // 📏 Parse Range Header (e.g., "bytes=100000-")
+        const rangeParts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(rangeParts[0], 10);
+        const end = rangeParts[1] ? parseInt(rangeParts[1], 10) : undefined;
 
-        res.setHeader("Content-Type", "video/mp4");
-        res.setHeader("Transfer-Encoding", "chunked");
+        // 🏗 Fetch Video Stream from S3
+        const headers = { Range: `bytes=${start}-${end || ""}` };
+        const videoStream = await axios.get(s3Url, {
+        headers,
+        responseType: "stream",
+        });
 
-        // Pipe video stream to response
-        videoStream.data.pipe(res);
+        res.writeHead(206, {
+            "Content-Range": `bytes ${start}-${end || "*"}/${videoStream.headers["content-length"]}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": videoStream.headers["content-length"],
+            "Content-Type": "video/mp4",
+          });
+      
+          videoStream.data.pipe(res); // 🔄 Stream from S3 to the user
     }
     catch{
         console.error("❌ Streaming Error:", error);
