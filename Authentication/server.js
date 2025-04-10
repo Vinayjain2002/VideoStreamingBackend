@@ -1,6 +1,7 @@
 const express= require("express");
 const db= require('./config');
 const authRoutes= require("./routes/authRoutes");
+const userRoutes = require("./routes/usersRoutes.js");
 require("dotenv").config();
 
 const app= express();
@@ -11,6 +12,7 @@ db.query("Select 1")
 .catch(err => console.log("Database Connection Failed", err));
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1",userRoutes);
 
 const PORT= process.env.PORT || 5000;
 app.listen(PORT, ()=> console.log(`Server is Running on the Port ${PORT}`));
