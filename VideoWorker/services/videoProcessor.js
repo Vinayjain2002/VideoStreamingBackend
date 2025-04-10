@@ -2,6 +2,7 @@ import axios from "axios";
 import fs from 'fs';
 import path from 'path';
 import { uploadToS3 } from "../utils/s3Uploader.js";
+import FormData from 'form-data';
 import { Video } from "../models/VideoSchema.js";
 
 export const processVideo = async({ filename, s3Url})=>{
@@ -20,23 +21,23 @@ export const processVideo = async({ filename, s3Url})=>{
         }
 
         console.log("Saving File");
-        fs.writeFileSync(tempFilePath, videoBuffer);
+       await fs.writeFileSync(tempFilePath, videoBuffer);
          console.log(tempFilePath);
-        console.log(`Sending the Video For the Processing, FileName: ${filename}`);
-       
-        const formData = new FormData();
-            formData.append("video", videoBuffer); // videoFile should be a Blob or File object
-        console.log(formData);
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11");
-            const processResponse = await axios.post("http://localhost:5002/api/videos/process", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data"
-                }
-            });
+
+         const form= new FormData();
+         const newfilename= path.basename(tempFilePath);
+         form.append('video', fs.createReadStream(tempFilePath), newfilename);
+         
+        console.log(`Sending the Video For the Processing, FileName: ${newfilename}`);
+        const processResponse= await axios.post("http://localhost:5002/api/videos/process",form, {
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity
+        });
+        
     //     //Data after Changing into the Different Formats ie in the Different Video Quality
         const processedResolutions = [];
         console.log(processResponse.status);
-        console.log(processResponse);d
+        console.log(processResponse);
         // const processData= processResponse.data;
     //     // Saving the Data TO S3 for Each Resoultion
 
