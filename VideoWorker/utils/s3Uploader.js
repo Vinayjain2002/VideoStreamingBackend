@@ -1,30 +1,46 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { config } from "dotenv";
+import { S3Client, ListBucketsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
-config();
-
-// Initialize the S3 client
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_SECRET_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
-export const uploadToS3 = async (filename, fileBuffer) => {
-  try {
-    const params = {
-      Bucket: process.env.AWS_S3_BUCKET,
-      Key: `videos/${filename}`,
-      Body: Buffer.from(fileBuffer, "base64"),
-      ContentType: "video/mp4",
-    };
 
-    const command = new PutObjectCommand(params);
-    await s3.send(command);
-    console.log(`✅ Successfully uploaded ${filename} to S3`);
+async function testS3Connection() {
+  try {
+    const command = new ListBucketsCommand({});
+    const response = await s3.send(command);
+    console.log("Successfully connected to AWS S3. Buckets:", response.Buckets);
   } catch (error) {
-    console.error("🚨 S3 Upload Error:", error);
+    console.error("Error connecting to AWS S3:", error.message);
+  }
+}
+
+
+export const uploadToS3 = async (filename, fileBuffer) => {
+  const uploadParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: filename,
+    Body: fileBuffer,
+    ContentType: "video/mp4",
+  };
+
+  try {
+    const command = new PutObjectCommand(uploadParams);
+    await s3.send(command);
+
+    // Construct the S3 file URL
+    const s3Url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
+    
+    console.log(`File uploaded successfully: ${s3Url}`);
+    return s3Url;
+  } catch (error) {
+    console.error("Error uploading file to S3:", error.message);
+    throw error; // Re-throw the error for better error handling
   }
 };
+
+testS3Connection();

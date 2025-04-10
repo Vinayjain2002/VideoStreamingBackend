@@ -13,9 +13,10 @@ export const processVideo= async (inputBuffer, filename)=>{
           let processedVideos = [];
           resolutions.forEach((res)=>{
             const outputFileName= `video_${res.name}.mp4`;
-            const outputPath= path.join("/tmp", outputFileName);
+            
+            const outputPath= path.join("temp", outputFileName);
 
-            const tempInputPath= path.join("/tmp", filename);
+            const tempInputPath= path.join("temp", filename);
             fs.writeFileSync(tempInputPath, inputBuffer);
 
             ffmpeg(tempInputPath)

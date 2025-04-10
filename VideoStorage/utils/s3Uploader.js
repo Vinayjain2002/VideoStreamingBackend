@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, ListBucketsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -8,14 +8,17 @@ const s3 = new S3Client({
   },
 });
 
+
 async function testS3Connection() {
   try {
-    const data = await s3.listBuckets({});
-    console.log('Successfully connected to AWS S3 in region:', process.env.AWS_REGION);
+    const command = new ListBucketsCommand({});
+    const response = await s3.send(command);
+    console.log("Successfully connected to AWS S3. Buckets:", response.Buckets);
   } catch (error) {
-    console.error('Error connecting to AWS S3:', error.message);
+    console.error("Error connecting to AWS S3:", error.message);
   }
 }
+
 
 export const uploadToS3 = async (filename, fileBuffer) => {
   const uploadParams = {
@@ -25,7 +28,19 @@ export const uploadToS3 = async (filename, fileBuffer) => {
     ContentType: "video/mp4",
   };
 
-  const command = new PutObjectCommand(uploadParams);
-  await s3.send(command);
+  try {
+    const command = new PutObjectCommand(uploadParams);
+    await s3.send(command);
+
+    // Construct the S3 file URL
+    const s3Url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
+    
+    console.log(`File uploaded successfully: ${s3Url}`);
+    return s3Url;
+  } catch (error) {
+    console.error("Error uploading file to S3:", error.message);
+    throw error; // Re-throw the error for better error handling
+  }
 };
+
 testS3Connection();

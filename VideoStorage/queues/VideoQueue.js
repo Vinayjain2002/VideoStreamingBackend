@@ -1,6 +1,6 @@
 import { Queue } from "bullmq";
 import {config} from 'dotenv';
-import e from "express";
+import express from "express";
 
 config();
 
