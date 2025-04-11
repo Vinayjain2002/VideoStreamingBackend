@@ -27,6 +27,11 @@ export const processVideo= async (inputBuffer, filename)=>{
             fs.writeFileSync(tempInputPath, inputBuffer);
 
             ffmpeg(tempInputPath)
+            .outputOptions([
+              "-crf 35", // Reduces quality (higher means worse quality)
+              "-b:v 500k", // Limits video bitrate
+              "-preset ultrafast", // Fast encoding
+            ])
             .size(res.size)
             .output(outputPath)
             .on("end", () => {

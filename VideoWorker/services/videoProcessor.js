@@ -20,9 +20,7 @@ export const processVideo = async({ filename, s3Url})=>{
             fs.mkdirSync(tempDir, { recursive: true }); // Create directory if it does not exist
         }
 
-        console.log("Saving File");
        await fs.writeFileSync(tempFilePath, videoBuffer);
-         console.log(tempFilePath);
 
          const form= new FormData();
          const newfilename= path.basename(tempFilePath);
@@ -34,9 +32,6 @@ export const processVideo = async({ filename, s3Url})=>{
           maxContentLength: Infinity
         });
         
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        console.log("Processed Video Output");
         console.log(processResponse);
     //     //Data after Changing into the Different Formats ie in the Different Video Quality
         const processedResolutions = [];
@@ -47,17 +42,7 @@ export const processVideo = async({ filename, s3Url})=>{
     //     // Saving the Data TO S3 for Each Resoultion
 
         for(const resolution of processData.resolutions){
-            console.log(resolution);
-            console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-            console.log(resolution.filename);
-            console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-
             const bufferData = Buffer.from(resolution.fileBuffer.data);
-            console.log("Buffer Data");
-            console.log(bufferData);
-            console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             const s3url=  await uploadToS3(resolution.filename, bufferData);
             s3URLS.push(s3url);
 
@@ -73,14 +58,14 @@ export const processVideo = async({ filename, s3Url})=>{
         }
         // console.log("//////////////////////////////////////////")
         // console.log("File Uploaded Successfully");    
-        console.log(s3URLS);
+        // console.log(s3URLS);
 
-        await Video.findOneAndUpdate(
-            { filename },
-            { $set: { resolutions: processedResolutions } },
-            { new: true }
-          );
-        console.log("All the Files Uploaded to S3");
+        // await Video.findOneAndUpdate(
+        //     { filename },
+        //     { $set: { resolutions: processedResolutions } },
+        //     { new: true }
+        //   );
+        // console.log("All the Files Uploaded to S3");
 
     }
     catch(error){
