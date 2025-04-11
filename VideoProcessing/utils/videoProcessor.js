@@ -1,6 +1,10 @@
 import ffmpeg from "fluent-ffmpeg";
+import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import fs from 'fs'
 import path from "path";
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+
 
 export const processVideo= async (inputBuffer, filename)=>{
   console.log("Request has come for the Processing");

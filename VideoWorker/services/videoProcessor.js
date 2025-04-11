@@ -34,32 +34,53 @@ export const processVideo = async({ filename, s3Url})=>{
           maxContentLength: Infinity
         });
         
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        console.log("Processed Video Output");
+        console.log(processResponse);
     //     //Data after Changing into the Different Formats ie in the Different Video Quality
         const processedResolutions = [];
+        const s3URLS= [];
         console.log(processResponse.status);
         console.log(processResponse);
-        // const processData= processResponse.data;
+        const processData= processResponse.data;
     //     // Saving the Data TO S3 for Each Resoultion
 
-    //     for(const resolution of processData.resolutions){
-    //         await uploadToS3(resolution.filename, resolution.fileBuffer);
-    //         const fileSize= Buffer.byteLength(resolution.fileBuffer);
-    //         const fileFormat= resolution.filename.split(".").pop();
-    //         processedResolutions.push({
-    //             filename: resolution.filename,
-    //             s3Url: s3ProcessedUrl,
-    //             size: fileSize,
-    //             format: fileFormat,
-    //             resolution: resolution.filename.match(/\d+p/)[0], // Extract resolution (e.g., 1080p)
-    //           });
-    //     }
+        for(const resolution of processData.resolutions){
+            console.log(resolution);
+            console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
-    //     await Video.findOneAndUpdate(
-    //         { filename },
-    //         { $set: { resolutions: processedResolutions } },
-    //         { new: true }
-    //       );
-    //     console.log("All the Files Uploaded to S3");
+            console.log(resolution.filename);
+            console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+
+            const bufferData = Buffer.from(resolution.fileBuffer.data);
+            console.log("Buffer Data");
+            console.log(bufferData);
+            console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            const s3url=  await uploadToS3(resolution.filename, bufferData);
+            s3URLS.push(s3url);
+
+            // const fileSize= Buffer.byteLength(resolution.fileBuffer);
+            // const fileFormat= resolution.filename.split(".").pop();
+            // processedResolutions.push({
+            //     filename: resolution.filename,
+            //     s3Url: s3ProcessedUrl,
+            //     size: fileSize,
+            //     format: fileFormat,
+            //     resolution: resolution.filename.match(/\d+p/)[0], // Extract resolution (e.g., 1080p)
+            //   });
+        }
+        // console.log("//////////////////////////////////////////")
+        // console.log("File Uploaded Successfully");    
+        console.log(s3URLS);
+
+        await Video.findOneAndUpdate(
+            { filename },
+            { $set: { resolutions: processedResolutions } },
+            { new: true }
+          );
+        console.log("All the Files Uploaded to S3");
 
     }
     catch(error){

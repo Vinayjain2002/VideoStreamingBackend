@@ -1,4 +1,9 @@
 import { S3Client, ListBucketsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import fs, { stat } from 'fs';
+import dotenv from 'dotenv';
+dotenv.config();
+
+console.log(process.env.AWS_REGION);
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -21,10 +26,15 @@ async function testS3Connection() {
 
 
 export const uploadToS3 = async (filename, fileBuffer) => {
+  if(!Buffer.isBuffer(fileBuffer)){
+    throw new Error("Invalid File Buffer: Expected A Buffer");
+  }
+
   const uploadParams = {
     Bucket: process.env.S3_BUCKET_NAME,
     Key: filename,
     Body: fileBuffer,
+    ContentLength:fileBuffer.length,
     ContentType: "video/mp4",
   };
 
