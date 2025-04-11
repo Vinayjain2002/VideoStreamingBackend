@@ -1,9 +1,14 @@
-const Notification= require("../models/NotificationModel.js")
-const {Queue}= require('bullmq');
-const { default: redisConnection } = require("../config/Redis.js");
+import Notification from "../models/NotificationModel.js";
+import {Queue} from 'bullmq';
+import {config} from 'dotenv';
 
+config();
 
-const notificationQueue= new Queue("notifications", {connection: redisConnection});
+export const notificationQueue= new Queue("notifications", {connection: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    password: process.env.REDIS_PASSWORD
+}});
 
 const sendNotification= async(req,res)=>{
     try{

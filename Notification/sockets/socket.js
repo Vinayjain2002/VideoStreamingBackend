@@ -23,4 +23,4 @@ const setUpSocket= (io)=>{
     })
 }
 
-module.exports= {setUpSocket, onlineUsers};
+export default {setUpSocket, onlineUsers};

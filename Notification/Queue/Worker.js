@@ -1,8 +1,10 @@
 import {Worker} from 'bullmq';
-import redisConnection from '../config/Redis';
-import {onlinUsers} from '../sockets/socket.js'
+import {onlinUsers} from '../sockets/socket.js';
+import dotenv from 'dotenv';
 
-new Worker("notifications", async(job)=>{
+dotenv.config();
+
+const notificationWorker= new Worker("notifications", async(job)=>{
     const {reciepent, sender, type, content, realTime}= job.data;
 
     if(realTime){
@@ -14,7 +16,17 @@ new Worker("notifications", async(job)=>{
         });
     }
 },
-{connection: redisConnection}
+{connection: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    password: process.env.REDIS_PASSWORD
+}}
 );
 
-console.log("Worker Started, Listening For the Jobs");
+notificationWorker.on("completed", (job)=>{
+    console.log("Notification Send", job.id);
+});
+
+notificationWorker.on("failed", (job, err)=>{
+    console.error(`Job Failed: ${job.id}`, err);
+});

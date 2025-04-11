@@ -1,20 +1,21 @@
 import express from 'express';
 import http from 'http';
+import {Server} from 'socket.io';
+
 import { connectDB } from './config/mongoDB.js';
-import redisConnection from './config/Redis.js';
 import notificationRoutes from './routes/notificationRoutes.js';
-import {setUpSocket} from './sockets/socket.js'
+import socketModule from './sockets/socket.js'
+const {setUpSocket, onlineUsers} = socketModule;
 
 connectDB();
-redisConnection();
 
 const app= express();
-const Server= http.createServer(app);
-const io= new Server(Server);
+const server= http.createServer(app);
+const io= new Server(server);
 
 app.use("/api/notification", notificationRoutes);
 setUpSocket(io);
 
-Server.listen(process.env.PORT, ()=>{
+server.listen(process.env.PORT, ()=>{
     console.log("Server is Listening on Port", process.env.PORT);
 });
