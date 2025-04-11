@@ -1,15 +1,22 @@
 import {Worker} from 'bullmq';
-import {onlinUsers} from '../sockets/socket.js';
+import socketModule from '../sockets/socket.js';
+const {setUpSocket, onlineUsers} = socketModule;
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 const notificationWorker= new Worker("notifications", async(job)=>{
-    const {reciepent, sender, type, content, realTime}= job.data;
 
+    console.log("New Notification Fetched from the Queue");
+
+    console.log(job.data);
+    const {reciepent, sender, type, content, realTime}= job.data;
+    console.log("!!!!!!!!!!!!!!!!!!!!1");
+    console.log(reciepent, sender, type, content, realTime);
     if(realTime){
-        users.forEach((userId) => {
-            const socketId= onlinUsers.get(userId);
+        reciepent.forEach((userId) => {
+         
+            console.log(onlineUsers);
+            const socketId= onlineUsers.get(userId);
             if(socketId){
                 io.to(socketId).emit("notification", {message});
             }
