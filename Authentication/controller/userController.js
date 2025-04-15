@@ -40,23 +40,34 @@ exports.getUser= async(req,res)=>{
     }
 }
 
-exports.ModifyUser= async(req,res)=>{
+exports.getUserProfile = async(req,res)=>{
     try{
-        const {userID, user} = req.body;
-        if(!userID || !user){
-            return res.status(404).json({"message": "Provided User Credentials"});
+        const {userID} = req.params;
+        const [users] = await db.query(`SELECT userID, username, email, profilePicture, bio, accountStatus, registrationDate, lastLogin FROM users WHERE userID = ?`, [userID]);
+        if(users.length === 0){
+            return res.status(404).json({error: "User Not Found"});
         }
-        const [existingUser]= await db.query(`Select * from users where id= ?`, [userID]);   
-        if(existingUser.length == 0){
-            return res.status(404).json({"message": "User Not Found"});
-        }
-        await db.query(`Update users set ? where id= ?`, [user, userID]);
-        return res.status(200).json({"message": "User Updated Successfully"});
+        return res.status(200).json({"message": "User Profile Fetched Successfully", data: users[0]});
     }
     catch(err){
-        return res.status(500).json({"message": "Internal Server Error"});
+        console.log("Error While Getting User Profile Details");
+        return res.status(500).json({"error": err.message});
     }
 }
+
+exports.updateUserProfile= async(req,res)=>{
+    try{
+        const {userID} = req.params;
+        const {bio, profilePicture, accountStatus}= req.body;
+        await db.query(`Update users set bio= ? profilePicture=?, accountStatus= ? where userID= ?`, [bio, profilePicture, accountStatus, userID]);
+
+        return res.status(200).json({"message": "Profile Updated Successfully"});
+    }
+    catch{
+        return res.status(500).json({"message": "Profile Updated Successfully"});
+    }
+}
+
 
 exports.DeleteUser= async(req, res)=>{
     try{

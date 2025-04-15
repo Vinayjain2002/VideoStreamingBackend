@@ -4,14 +4,14 @@ const jwt= require('jsonwebtoken');
 
 exports.registerUser= async(req, res)=>{
     try{
-        const {name, username, email, password}= req.body;
+        const {username, email, passwordHash}= req.body;
 
         const [existingUser]= await db.query(`Select * from users where email = ?`, [email]);
         if(existingUser.length > 0){
             return res.status(400).json({"error": "User Already Exists"});
         }
         const hashedPassword= await bcrypt.hash(password, 10);
-        await db.query(`Insert into users (name,username, email, password) values (?,?, ?, ?)`, [name, username, email, hashedPassword]);
+        await db.query(`Insert into users (username, email, passwordHash) values (?,?, ?, ?)`, [username, email, hashedPassword]);
         return res.status(201).json({"message": "User Registered Successfully"});
     }
     catch(error){
@@ -21,13 +21,13 @@ exports.registerUser= async(req, res)=>{
 
 exports.loginUser= async(req,res)=>{
     try{
-        const {email, password}= req.body;
+        const {email, passwordHash}= req.body;
         const [users]= await db.query(`Select * from users where email= ?`, [email]);
         if(users.length ===0){
             return res.status(400).json({error: "Invalid email or Password"});
         }
         const user= users[0];
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(passwordHash, user.passwordHash);
         if(!isMatch){
             return res.status(400).json({"error": "Invalid Email or Password"});
         }
@@ -38,6 +38,16 @@ exports.loginUser= async(req,res)=>{
     } 
     catch(error){
         res.status(500).json({"error": error.message});
+    }
+}
+
+
+exports.updateLastLogin= async(userID)=>{
+    try{
+        await db.query(`Update users set lastLogin= CURRENT_TIMESTAMP where userID = ?`,[userID]);
+    }
+    catch(err){
+        console.log("Failed to Update Last Login", err.message);
     }
 }
 

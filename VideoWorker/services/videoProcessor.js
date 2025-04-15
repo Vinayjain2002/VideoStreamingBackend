@@ -31,31 +31,38 @@ export const processVideo = async({ filename, s3Url})=>{
           maxBodyLength: Infinity,
           maxContentLength: Infinity
         });
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1");
+        console.log("#################################");
         
         console.log(processResponse);
-    //     //Data after Changing into the Different Formats ie in the Different Video Quality
+
         const processedResolutions = [];
         const s3URLS= [];
+      
         console.log(processResponse.status);
         console.log(processResponse);
         const processData= processResponse.data;
     //     // Saving the Data TO S3 for Each Resoultion
 
-        for(const resolution of processData.resolutions){
-            const bufferData = Buffer.from(resolution.fileBuffer.data);
-            const s3url=  await uploadToS3(resolution.filename, bufferData);
-            s3URLS.push(s3url);
+        // for(const resolution of processData.resolutions){
+        //     const bufferData = Buffer.from(resolution.fileBuffer.data);
+        //     const s3url=  await uploadToS3(resolution.filename, bufferData);
+        //     s3URLS.push(s3url);
 
-            // const fileSize= Buffer.byteLength(resolution.fileBuffer);
-            // const fileFormat= resolution.filename.split(".").pop();
-            // processedResolutions.push({
-            //     filename: resolution.filename,
-            //     s3Url: s3ProcessedUrl,
-            //     size: fileSize,
-            //     format: fileFormat,
-            //     resolution: resolution.filename.match(/\d+p/)[0], // Extract resolution (e.g., 1080p)
-            //   });
-        }
+        //     const fileSize= Buffer.byteLength(resolution.fileBuffer);
+        //     const fileFormat= resolution.filename.split(".").pop();
+        //     console.log(fileSize);
+        //     console.log(fileFormat);
+
+        //     // processedResolutions.push({
+        //     //     filename: resolution.filename,
+        //     //     s3Url: s3url,
+        //     //     size: fileSize,
+        //     //     format: fileFormat,
+        //     //     resolution: resolution.filename.match(/\d+p/)[0], // Extract resolution (e.g., 1080p)
+        //     //   });
+        //       console.log("File Data is Stored on the SSMS");
+        // }
         // console.log("//////////////////////////////////////////")
         // console.log("File Uploaded Successfully");    
         // console.log(s3URLS);
