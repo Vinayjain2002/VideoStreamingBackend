@@ -1,6 +1,6 @@
-const db= require('../config');
+import db from '../config.js';
 
-exports.getAllUsers= async(req, res)=>{
+export const getAllUsers= async(req, res)=>{
     try{
         const page= parseInt(req.query.page) || 1;
         const limit= parseInt(req.query.limit) || 10;
@@ -23,7 +23,7 @@ exports.getAllUsers= async(req, res)=>{
     }
 };
 
-exports.getUser= async(req,res)=>{
+export const getUser= async(req,res)=>{
     try{
         const {userID}= req.body;
         if(!userID){
@@ -40,7 +40,7 @@ exports.getUser= async(req,res)=>{
     }
 }
 
-exports.getUserProfile = async(req,res)=>{
+export const getUserProfile = async(req,res)=>{
     try{
         const {userID} = req.params;
         const [users] = await db.query(`SELECT userID, username, email, profilePicture, bio, accountStatus, registrationDate, lastLogin FROM users WHERE userID = ?`, [userID]);
@@ -55,7 +55,7 @@ exports.getUserProfile = async(req,res)=>{
     }
 }
 
-exports.updateUserProfile= async(req,res)=>{
+export const updateUserProfile= async(req,res)=>{
     try{
         const {userID} = req.params;
         const {bio, profilePicture, accountStatus}= req.body;
@@ -69,7 +69,7 @@ exports.updateUserProfile= async(req,res)=>{
 }
 
 
-exports.DeleteUser= async(req, res)=>{
+export const DeleteUser= async(req, res)=>{
     try{
         const {userID}= req.body;
         if(!userID){

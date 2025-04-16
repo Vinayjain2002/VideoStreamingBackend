@@ -1,10 +1,11 @@
-const express= require("express");
-const db= require('./config');
-const authRoutes= require("./routes/authRoutes");
-const userRoutes = require("./routes/usersRoutes.js");
-const usernameRoutes = require("./routes/userNameRoutes.js");
-require("dotenv").config();
+import express from "express";
+import db from './config.js';
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/usersRoutes.js";
+import usernameRoutes from "./routes/userNameRoutes.js";
+import dotenv from 'dotenv';
 
+dotenv.config();
 const app= express();
 app.use(express.json());
 

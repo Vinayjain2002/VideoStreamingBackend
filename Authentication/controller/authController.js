@@ -1,8 +1,8 @@
-const db= require('../config');
-const bcrypt= require("bcryptjs");
-const jwt= require('jsonwebtoken');
+import db from '../config.js';
+import bcrypt from "bcryptjs";
+import jwt from 'jsonwebtoken';
 
-exports.registerUser= async(req, res)=>{
+export const registerUser= async(req, res)=>{
     try{
         const {username, email, passwordHash}= req.body;
 
@@ -19,7 +19,7 @@ exports.registerUser= async(req, res)=>{
     }
 }
 
-exports.loginUser= async(req,res)=>{
+export const loginUser= async(req,res)=>{
     try{
         const {email, passwordHash}= req.body;
         const [users]= await db.query(`Select * from users where email= ?`, [email]);
@@ -42,7 +42,7 @@ exports.loginUser= async(req,res)=>{
 }
 
 
-exports.updateLastLogin= async(userID)=>{
+export const updateLastLogin= async(userID)=>{
     try{
         await db.query(`Update users set lastLogin= CURRENT_TIMESTAMP where userID = ?`,[userID]);
     }
@@ -51,7 +51,7 @@ exports.updateLastLogin= async(userID)=>{
     }
 }
 
-exports.refreshToken= async(req,res)=>{
+export const refreshToken= async(req,res)=>{
     try{
         const {refreshToken}= req.body;
         if(!refreshToken){
@@ -75,3 +75,4 @@ exports.refreshToken= async(req,res)=>{
         return res.status(500).json({error: error.message});
     }
 }
+

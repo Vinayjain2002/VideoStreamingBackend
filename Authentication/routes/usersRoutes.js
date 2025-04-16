@@ -1,8 +1,8 @@
-const express= require("express");
+import express from "express";
 const router= express.Router();
-const authMiddleware = require('../middleware/authMiddleware.js');
-const {getAllUsers, getUser, DeleteUser, updateUserProfile, getUserProfile}= require("../controller/userController.js");
-const { route } = require("./authRoutes.js");
+import authMiddleware from '../middleware/authMiddleware.js';
+import {getAllUsers, getUser, DeleteUser, updateUserProfile, getUserProfile} from "../controller/userController.js";
+import  route  from "./authRoutes.js";
 
 
 router.get("/get/users", authMiddleware, getAllUsers);
@@ -11,4 +11,4 @@ router.put("/update/user", authMiddleware, updateUserProfile);
 router.delete("/delete/user", authMiddleware, DeleteUser);
 router.put("/update/profile", authMiddleware, updateUserProfile);
 router.get("/get/profile", authMiddleware, getUserProfile);
-module.exports= router;
+export default router;
