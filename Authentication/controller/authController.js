@@ -1,6 +1,8 @@
 import db from '../config.js';
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
+import axios from 'axios';
+
 
 export const registerUser= async(req, res)=>{
     try{
@@ -10,9 +12,22 @@ export const registerUser= async(req, res)=>{
         if(existingUser.length > 0){
             return res.status(400).json({"error": "User Already Exists"});
         }
-        const hashedPassword= await bcrypt.hash(password, 10);
-        await db.query(`Insert into users (username, email, passwordHash) values (?,?, ?, ?)`, [username, email, hashedPassword]);
-        return res.status(201).json({"message": "User Registered Successfully"});
+        const hashedPassword= await bcrypt.hash(passwordHash, 10);
+
+        await db.query(
+            `INSERT INTO users (username, email, passwordHash) VALUES (?, ?, ?)`,
+            [username, email, hashedPassword]
+          );
+
+          const response = await axios.post('http://localhost:5000/api/v1/register/username', {
+            "username": username
+          });
+          if(response.status== 201){
+            return res.status(201).json({"message": "User Registered Successfully and Stored in Bloom Filter"});
+          }
+          else{
+            return res.status(201).json({"message": "User Registered Successfully"});
+          }
     }
     catch(error){
         return res.status(500).json({"error": error.message});
@@ -31,9 +46,10 @@ export const loginUser= async(req,res)=>{
         if(!isMatch){
             return res.status(400).json({"error": "Invalid Email or Password"});
         }
-        const accessToken= jwt.sign({ userId: user.id}, process.env.ACCESS_SECRET, {expiresIn: "1h"});
-        const refreshToken = jwt.sign({userId: user.id}, process.env.REFRESH_SECRET, {expiresIn: "7d"}); 
-        await db.query("UPDATE users SET refreshToken = ? WHERE id = ?", [refreshToken, user.id]);
+        console.log(user.userID);
+        const accessToken= jwt.sign({ userId: user.userID}, process.env.ACCESS_SECRET, {expiresIn: "1h"});
+        const refreshToken = jwt.sign({userId: user.userID}, process.env.REFRESH_SECRET, {expiresIn: "7d"}); 
+        await db.query("UPDATE users SET refreshToken = ? WHERE userID = ?", [refreshToken, user.userID]);
         return res.status(200).json({"message": "Login Successful", accessToken, refreshToken});
     } 
     catch(error){
@@ -41,16 +57,14 @@ export const loginUser= async(req,res)=>{
     }
 }
 
-
-export const updateLastLogin= async(userID)=>{
-    try{
-        await db.query(`Update users set lastLogin= CURRENT_TIMESTAMP where userID = ?`,[userID]);
+export const updateLastLogin = async (userID) => {
+    try {
+      await db.query(`UPDATE users SET lastLogin = CURRENT_TIMESTAMP WHERE userID = ?`, [userID]);
+    } catch (err) {
+      console.log("Failed to Update Last Login", err.message);
     }
-    catch(err){
-        console.log("Failed to Update Last Login", err.message);
-    }
-}
-
+  };
+  
 export const refreshToken= async(req,res)=>{
     try{
         const {refreshToken}= req.body;

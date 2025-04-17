@@ -44,12 +44,12 @@ async function initBloomFilter() {
 
 initBloomFilter();
 
-export const checkAndRegisterUsername = async (req, res) => {
-  const { username, email, passwordHash } = req.body;
+export const checkUsername = async (req, res) => {
+  const { username} = req.body;
 
   try {
     const mightExist = await redis.call("BF.EXISTS", "usernames", username);
-
+    console.log("Value of the Might Exists", mightExist);
     if (mightExist === 1) {
       const [rows] = await db.query("SELECT userID FROM users WHERE username = ?", [username]);
       if (rows.length > 0) {
@@ -57,15 +57,31 @@ export const checkAndRegisterUsername = async (req, res) => {
       }
     }
 
-    await db.query("INSERT INTO users (username, email, passwordHash) VALUES (?, ?, ?)", [username, email, passwordHash]);
-    await redis.call("BF.ADD", "usernames", username);
-
-    res.status(201).json({ message: "Username registered successfully" });
+    return res.status(201).json({"message": "Username exists"});
+   
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Server error" });
   }
 };
+
+export const registerUsername= async(req,res)=>{
+  try{
+    const { username} = req.body;
+    const mightExist = await redis.call("BF.EXISTS", "usernames", username);
+    if (mightExist === 1) {
+      const [rows] = await db.query("SELECT userID FROM users WHERE username = ?", [username]);
+      if (rows.length > 0) {
+        return res.status(409).json({ error: "Username already Registered" });
+      }
+    }
+    await redis.call("BF.ADD", "usernames", username);
+    res.status(201).json({ message: "Username registered successfully" });
+  }
+  catch{
+    return res.status(500).json({"error": "Server Error"});
+  }
+}
 
 async function testMainBloom() {
   try {

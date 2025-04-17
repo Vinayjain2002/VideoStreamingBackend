@@ -6,7 +6,7 @@ export const getAllUsers= async(req, res)=>{
         const limit= parseInt(req.query.limit) || 10;
         const offset= (page-1)*limit;
 
-        const [users]= await db.query(`Select id, name, username, email from users limit ? offset ?`, [limit, offset]);
+        const [users]= await db.query(`Select userID, username, email, profilePicture, bio, accountStatus from users limit ? offset ?`, [limit, offset]);
         const [countResult]= await db.query(`Select Count(*) as totalUsers from users`);
 
         return res.json({
@@ -29,7 +29,7 @@ export const getUser= async(req,res)=>{
         if(!userID){
             return res.status(404).json({"message": "Provide UserID"});
         }
-        const [users]= await db.query( `Select * from users where id= ?`,[userID]);
+        const [users]= await db.query( `Select userID, username, email, refreshToken,profilePicture,registrationDate,lastLogin  ,bio, accountStatus from users where userID= ?`,[userID]);
         if(users.length==0){
             return res.status(400).json({"message": "Invalid UserID"});
         }
@@ -59,31 +59,31 @@ export const updateUserProfile= async(req,res)=>{
     try{
         const {userID} = req.params;
         const {bio, profilePicture, accountStatus}= req.body;
-        await db.query(`Update users set bio= ? profilePicture=?, accountStatus= ? where userID= ?`, [bio, profilePicture, accountStatus, userID]);
+        await db.query(`Update users set bio= ?,profilePicture=?, accountStatus= ? where userID= ?`, [bio, profilePicture, accountStatus, userID]);
 
         return res.status(200).json({"message": "Profile Updated Successfully"});
     }
-    catch{
-        return res.status(500).json({"message": "Profile Updated Successfully"});
+    catch(err){
+        return res.status(500).json({"error": err});
     }
 }
 
 
 export const DeleteUser= async(req, res)=>{
     try{
-        const {userID}= req.body;
+        const {userID}= req.params;
         if(!userID){
             return res.status(404).json({"message":"Provide UserID"});
         }
-        const [existingUser]= await db.query(`Select * from users where id= ?`, [userID]);
+        const [existingUser]= await db.query(`Select * from users where userID= ?`, [userID]);
         if(existingUser.length ==0){
             return res.status(404).json({"message": "User Not Found"});
         }
-        await db.query(`Delete from users where id= ?`, [userID]);
+        await db.query(`Delete from users where userID= ?`, [userID]);
         return res.status(200).json({"message": "User Deleted Successfully"});
         
     }
     catch(Error){
-        return res.status(500).json({"message": "Internal Server Error"});
+        return res.status(500).json({"error": Error});
     }
 }

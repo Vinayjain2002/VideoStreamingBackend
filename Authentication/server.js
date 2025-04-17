@@ -13,7 +13,7 @@ db.query("Select 1")
 .then(()=> console.log("Database Connected Successfully"))
 .catch(err => console.log("Database Connection Failed", err));
 
-app.use("/auth", usernameRoutes);
+app.use("/api/v1", usernameRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1",userRoutes)
 

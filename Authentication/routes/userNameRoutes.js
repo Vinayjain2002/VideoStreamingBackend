@@ -1,7 +1,7 @@
 import  express from "express";
-import {checkAndRegisterUsername} from "../controller/userNameBloomFilterController.js";
+import {checkUsername, registerUsername} from "../controller/userNameBloomFilterController.js";
 const router = express.Router();
 
-router.post("/register-username", checkAndRegisterUsername);
-
+router.post("/check/username", checkUsername);
+router.post("/register/username", registerUsername)
 export default router;
