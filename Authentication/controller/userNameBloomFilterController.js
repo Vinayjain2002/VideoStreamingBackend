@@ -1,10 +1,9 @@
 import Redis from "ioredis";
 import mysql from "mysql2";
 import dotenv from 'dotenv';
-
+import db from '../config.js';
 dotenv.config();
 
-console.log(process.env.DB_HOST, process.env.DB_NAME, process.env.DB_PASSWORD, process.env.DB_USER);
 
 const redis = new Redis({
   host: process.env.REDIS_HOST, // Replace with Redis Cloud details
@@ -12,23 +11,29 @@ const redis = new Redis({
   password: process.env.REDIS_PASSWORD,
 });
 
-
-const pool= mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 10,  // Maximum number of connections
-    queueLimit: 0
+redis.on('connect', () => {
+  console.log('🔌 Redis client is connecting...');
 });
 
-const db= pool.promise();
+redis.on('ready', () => {
+  console.log('✅ Redis connection established and ready to use!');
+});
 
-// Call this once on startup
+redis.on('error', (err) => {
+  console.error('❌ Redis connection error:', err);
+});
+
+redis.on('end', () => {
+  console.log('🚪 Redis connection closed.');
+});
+
+
 async function initBloomFilter() {
   try {
     await redis.call("BF.RESERVE", "usernames", 0.01, 2000);
+    // no of the Hash Functions k = (m / n) * ln(2)
+//     n = number of expected items (here, 2000)
+// m = number of bits in the filter
     console.log("Bloom filter initialized ✅");
   } catch (err) {
     if (!err.message.includes("item exists")) {
@@ -36,6 +41,7 @@ async function initBloomFilter() {
     }
   }
 }
+
 initBloomFilter();
 
 export const checkAndRegisterUsername = async (req, res) => {
@@ -60,3 +66,33 @@ export const checkAndRegisterUsername = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+async function testMainBloom() {
+  try {
+    await redis.call("BF.RESERVE", "usernames_test", 0.01, 100);
+  } catch (err) {
+    if (err.message.includes("item exists")) {
+      console.log("Bloom filter usernames_test already exists. Continuing...");
+    } else {
+      console.error("Error initializing Bloom filter:", err);
+      return;
+    }
+  }
+
+  try {
+    const testUsername = "vinay_live_check";
+
+    const existsBefore = await redis.call("BF.EXISTS", "usernames_test", testUsername);
+    console.log("Exists before adding:", existsBefore); // should be 0
+
+    await redis.call("BF.ADD", "usernames_test", testUsername);
+
+    const existsAfter = await redis.call("BF.EXISTS", "usernames_test", testUsername);
+    console.log("Exists after adding:", existsAfter); // should be 1
+
+  } catch (err) {
+    console.error("Error testing usernames_test Bloom filter:", err);
+  }
+}
+
+testMainBloom();
