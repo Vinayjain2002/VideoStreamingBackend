@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
 import dotenv from 'dotenv';
 import { processVideo } from "../utils/videoProcessor.js";
+import axios from "axios";
 dotenv.config();
 
 export const ResoltionWorker= new Worker(
@@ -25,9 +26,14 @@ export const ResoltionWorker= new Worker(
         const fileName = `chunk_${videoID}_${Date.now()}.ts`; // You can customize how to name it
     
         console.log(`Video Chunk Downloaded: ${fileName}`);
-    
+        console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        console.log("videoBuffer",videoBuffer)
+        console.log("fileName", fileName);
+        console.log("VideoID", videoID);
+        console.log("Chunk Index", ChunkIndex);
+        console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         // Step 3: Process the downloaded video chunk with the video buffer and file name
-        await processVideo({ videoBuffer, fileName, VideoID,ChunkIndex });
+        await processVideo(videoBuffer, fileName, videoID, ChunkIndex);
     
         console.log(`Resolution Changed for Video: ${videoID}`);
     },

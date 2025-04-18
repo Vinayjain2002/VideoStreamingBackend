@@ -1,14 +1,13 @@
 import { Worker } from "bullmq";
 import dotenv from "dotenv";
 import { processVideo } from "./services/videoProcessor.js";
-import { connectDB } from "./db.js";
+import db from "./db.js";
 
 dotenv.config();
 
 const videoWorker = new Worker(
     "videoQueue",
     async (job) => {
-      console.log(`Processing video: ${job.data.filename} from ${job.data.s3Url}`);
       await processVideo(job.data);
     },
     {
@@ -21,8 +20,10 @@ const videoWorker = new Worker(
     }
   );
 
-  connectDB();
-  
+db.query("Select 1")
+.then(()=> console.log("MySQL Database Connected Successfully"))
+.catch(err => console.log("Database Connection Failed", err));
+
   videoWorker.on("completed", (job) => {
     console.log(`Job completed: ${job.id}`);
   });

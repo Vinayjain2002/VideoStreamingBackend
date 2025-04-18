@@ -4,7 +4,7 @@ import express from "express";
 
 config();
 
- const videoQueue = new Queue("videoQueue", {
+ const videoProcessingQueue = new Queue("VideoProcessingQueue", {
     connection: {
       host: process.env.REDIS_HOST,
       port: process.env.REDIS_PORT,
@@ -12,15 +12,16 @@ config();
     }
   });
   
-videoQueue.on('ready', ()=>{
+videoProcessingQueue.on('ready', ()=>{
   console.log("BullMQ video Queue is Connected to Redis");
 });
 
-videoQueue.on('error', (error)=>{
+videoProcessingQueue.on('error', (error)=>{
   console.log("BullMQ videoQueue connection Failed", error);
 });
-videoQueue.on('disconnected', () => {
+
+videoProcessingQueue.on('disconnected', () => {
   console.log('BullMQ "videoQueue" has been disconnected from Redis.');
 });
 
-export default videoQueue
+export default videoProcessingQueue;

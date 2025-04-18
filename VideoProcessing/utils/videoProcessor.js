@@ -1,6 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
-import fs from 'fs';
+import fs, { chownSync } from 'fs';
 import path from "path";
 import { uploadToS3 } from "./s3Uploader.js";
 import db from '../Database/sql.js';
@@ -9,6 +9,12 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) => {
   console.log("Request has come for the Processing");
+  console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+  console.log("inputBuffer", inputBuffer);
+  console.log("Filename", filename);
+  console.log("VideoID", VideoID);
+  console.log("Chunk Index", ChunkIndex);
+  console.log("/////////////////////////////////////////////////")
 
   try {
     const resolutions = [
@@ -24,9 +30,12 @@ export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) =
 
     // Use a 'for' loop to allow awaiting async operations
     for (const res of resolutions) {
-      const outputFileName = `${res.name}_${filename}.mp4`;
+      console.log(res);
+      console.log(res.name);
+      const outputFileName = `Resoluted${res.name}_${filename}.mp4`;
       const outputPath = path.join("temp", outputFileName);
       const tempInputPath = path.join("temp", filename);
+      console.log(tempInputPath);
       
       console.log("Going to Write to the File");
       fs.writeFileSync(tempInputPath, inputBuffer);
@@ -74,6 +83,8 @@ export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) =
             .on("error", (err) => reject(err))
             .run();
         });
+
+        console.log("Different Resolutions Video Had Been Saved Successfully");
       } catch (err) {
         console.error("Error processing resolution:", err);
       }

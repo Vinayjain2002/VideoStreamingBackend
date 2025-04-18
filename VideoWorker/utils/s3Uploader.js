@@ -26,16 +26,23 @@ async function testS3Connection() {
 
 
 export const uploadToS3 = async (filename, fileBuffer) => {
-  if(!Buffer.isBuffer(fileBuffer)){
+  if (!Buffer.isBuffer(fileBuffer)) {
     throw new Error("Invalid File Buffer: Expected A Buffer");
+  }
+
+  let contentType = 'application/octet-stream'; // Default
+  if (filename.endsWith('.m3u8')) {
+    contentType = 'application/vnd.apple.mpegurl';
+  } else if (filename.endsWith('.ts')) {
+    contentType = 'video/mp2t';
   }
 
   const uploadParams = {
     Bucket: process.env.S3_BUCKET_NAME,
     Key: filename,
     Body: fileBuffer,
-    ContentLength:fileBuffer.length,
-    ContentType: "video/mp4",
+    ContentLength: fileBuffer.length,
+    ContentType: contentType, // Dynamically set Content-Type
   };
 
   try {
@@ -44,8 +51,8 @@ export const uploadToS3 = async (filename, fileBuffer) => {
 
     // Construct the S3 file URL
     const s3Url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
-    
-    console.log(`File uploaded successfully: ${s3Url}`);
+
+    console.log(`File uploaded successfully: ${s3Url} (Content-Type: ${contentType})`);
     return s3Url;
   } catch (error) {
     console.error("Error uploading file to S3:", error.message);

@@ -1,4 +1,4 @@
-import { Job, Worker } from "bullmq";
+import {  Worker } from "bullmq";
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { resoluteVideo } from './services/VideoResolutions.js';
@@ -6,11 +6,12 @@ import { ResoltionWorker } from "./Worker/ResolutionWorker.js";
 
 dotenv.config();
 
+console.log("Processing Queu is Working")
 const VideoProcessWorker= new Worker(
   "VideoProcessingQueue",
-   async(Job)=>{
+   async(job)=>{
     console.log("Going to Chnage the Video To The Different Resolutions");
-    await resoluteVideo(Job.data);
+    await resoluteVideo(job.data);
 }, {
     connection: {
         host: process.env.REDIS_HOST,
