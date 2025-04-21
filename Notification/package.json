@@ -12,11 +12,14 @@
   "description": "",
   "dependencies": {
     "bull": "^4.16.5",
-    "bullmq": "^5.48.1",
+    "bullmq": "^5.49.1",
+    "config": "^3.3.12",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "firebase-admin": "^13.2.0",
     "ioredis": "^5.6.0",
     "mongoose": "^8.13.2",
+    "nodemailer": "^6.10.1",
     "nodemon": "^3.1.9",
     "redis": "^4.7.0",
     "socket.io": "^4.8.1"

@@ -3,14 +3,17 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { resoluteVideo } from './services/VideoResolutions.js';
 import { ResoltionWorker } from "./Worker/ResolutionWorker.js";
+import connectDB from "./Database/MongoDB.js";
 
 dotenv.config();
+connectDB();
 
 console.log("Processing Queu is Working")
 const VideoProcessWorker= new Worker(
   "VideoProcessingQueue",
    async(job)=>{
     console.log("Going to Chnage the Video To The Different Resolutions");
+    console.log(job.data);
     await resoluteVideo(job.data);
 }, {
     connection: {

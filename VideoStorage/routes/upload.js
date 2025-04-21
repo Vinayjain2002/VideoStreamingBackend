@@ -2,7 +2,6 @@ import express from "express";
 import multer from "multer";
 import videoQueue from '../queues/VideoQueue.js';
 import { uploadToS3 } from "../utils/s3Uploader.js";
-import { Video } from "../Models/VideoModal.js";
 import authMiddleware from "../Middleware/authmiddleware.js";
 import db from '../Database/sql.js';
 const router= express.Router();
@@ -27,15 +26,14 @@ router.post("/", authMiddleware,upload.single("video"), async(req, res)=>{
     const fileBuffer= req.file.buffer;
     const fileSize= req.file.size;
     const fileFormat=  filename.split(".").pop();
-    console.log("!!!!!!!!!!!!!!1");
     console.log(filename, fileBuffer, fileSize, fileFormat);
     
     const uniqueName = `${uuidv4()}_${filename}`;
-        console.log("The Unique File Name is Defined as the ", uniqueName);
+    console.log("The Unique File Name is Defined as the ", uniqueName);
     const s3Url=  await uploadToS3(uniqueName, fileBuffer);
     console.log(`Enqueuing ${uniqueName} for processing..`);
     
-        // We are gonna to Add the Video Data into the Table
+    // We are gonna to Add the Video Data into the Table
         const [result] = await db.query(
             `INSERT INTO videos (uploaderID, title, description, duration, privacyStatus, categoryID, s3Url, videoSize) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [intuserID, title, description, duration, privacyStatus, categoryID, s3Url, fileSize]

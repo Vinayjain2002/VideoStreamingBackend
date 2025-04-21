@@ -1,45 +1,40 @@
 import axios  from "axios";
-import fs from 'fs';
-import path from "path";
-import { ResolutionQueue } from "../queue/queue.js";
+import { processVideo } from "./videoProcessor.js";
 /**
  * Downloads HLS chunks from S3 using .m3u8 file URL and processes them.
  * @param {string} m3u8Url - The URL to the HLS playlist (.m3u8).
  */
 
-export const resoluteVideo= async({ s3Url,
-    hlsOriginalFileS3URL,
-    VideoID})=>{
+
+export const resoluteVideo= async({ chunkS3Url,
+    VideoID,chunkIndex})=>{
     try{
-        console.log("Downloading the File For the Resolutions of Videos, s3url:", s3Url);
-        console.log("HLSURL: ", hlsOriginalFileS3URL);
+        console.log(`Changing Resolution: ${VideoID} and ChunkUrl: ${chunkS3Url}`);
+        // Step 1: Download the video chunk from S3 URL
+        const response = await axios({
+          method: "get",
+          url: chunkS3Url,
+          responseType: "arraybuffer", // Getting the buffer data
+        });   
 
-        console.log("Fetching .m3u8 file...");
-        const hlsplaylistResponse= await axios.get(hlsOriginalFileS3URL);
-        const hlsplaylistContent= hlsplaylistResponse.data;
 
-        console.log("HLS Data:", hlsplaylistContent);
-        const chunkUrls = hlsplaylistContent
-        .split("\n")
-        .filter((line) => line.trim().endsWith(".ts"))
-        .map((line) => (line.startsWith("http") ? line : baseUrl + line));
+        const videoBuffer = Buffer.from(response.data);
+        const fileName = `video/${VideoID}/chunk/chunk-${chunkIndex}.ts`; // You can customize how to name it
 
-        console.log(`Found ${chunkUrls.length} chunks to download.`);
+        console.log(`Video Chunk Downloaded: ${fileName}`);
+        console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        console.log("videoBuffer",videoBuffer)
+        console.log("fileName", fileName);
+        console.log("VideoID", VideoID);
+        console.log("Chunk Index", chunkIndex);
+        console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        // Step 3: Process the downloaded video chunk with the video buffer and file name
 
-        for(let index=0; index< chunkUrls.length; index++ ){
-            const chunkUrl= chunkUrls[index];
-            const chunkIndex= index;
+        console.log("Sending the Vide For the Processing");
+        await processVideo(videoBuffer, fileName, VideoID, chunkIndex);
+    
+        console.log(`Resolution Changed for Video: ${VideoID}`);
 
-            console.log(`Streaming Chunk: ${chunkUrl} with ChunkIndex: ${chunkIndex}`);
-           
-            // Sending the Video for the Processing by Pushing into the Queue
-            await ResolutionQueue.add("ResolutionQueue", {
-                VideoID,
-                chunkUrl,
-                chunkIndex
-            });
-            console.log("Video Had Been Sent for the Changing of the Resolutions");
-        }
     }
     catch{
 

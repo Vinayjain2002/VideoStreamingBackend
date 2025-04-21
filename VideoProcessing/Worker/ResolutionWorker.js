@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
 import dotenv from 'dotenv';
-import { processVideo } from "../utils/videoProcessor.js";
+import { processVideo } from "../services/videoProcessor.js";
 import axios from "axios";
 dotenv.config();
 
@@ -20,7 +20,6 @@ export const ResoltionWorker= new Worker(
         });   
 
         // Woker had just Downloaded the Video
-        console.log("Chunk Video Data", response.data);
 
         const videoBuffer = Buffer.from(response.data);
         const fileName = `chunk_${videoID}_${Date.now()}.ts`; // You can customize how to name it

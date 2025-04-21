@@ -11,6 +11,12 @@
 # production
 /build
 
+
+# Ignore video and streaming files
+*.ts
+*.mp4
+*.m3u8
+
 # misc
 .DS_Store
 *.env

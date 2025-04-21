@@ -20,6 +20,7 @@ const videoWorker = new Worker(
     }
   );
 
+  
 db.query("Select 1")
 .then(()=> console.log("MySQL Database Connected Successfully"))
 .catch(err => console.log("Database Connection Failed", err));
@@ -28,7 +29,7 @@ db.query("Select 1")
     console.log(`Job completed: ${job.id}`);
   });
   
+  
   videoWorker.on("failed", (job, err) => {
     console.error(`Job failed: ${job.id}`, err);
   });
-  
