@@ -60,14 +60,14 @@ export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) =
               try {
                 const fileBuffer = fs.readFileSync(readFileName);
                 const ChunkS3Url = await uploadToS3(outputFileName, fileBuffer);
-                const chunkProcessingData= new ChunkProcessing.create({
+                await ChunkProcessing.create({
                   VideoID: VideoID,
                   resolution: res,
                   chunkIndex: ChunkIndex,
                   chunkS3Url: ChunkS3Url,
                   processed: true
                 });
-                await chunkProcessingData.save();
+                
                 
                 const updatedResolutionProcessing = await ResolutionProcessing.findOneAndUpdate(
                   { videoID: VideoID, resolution: res },

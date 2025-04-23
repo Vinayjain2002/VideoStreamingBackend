@@ -82,19 +82,19 @@ export const processVideo = async({ filename, s3Url, VideoID})=>{
                
                 await ResolutionProcessing.insertMany([
                   {
-                    VideoID: VideoID,
+                    videoID: VideoID,
                     resolution: '360p',
-                    expectedChunks: ChunkIndex - 1
+                    expectedChunks: chunkIndex - 1
                   },
                   {
-                    VideoID: VideoID,
+                    videoID: VideoID,
                     resolution: '720p',
-                    expectedChunks: ChunkIndex - 1
+                    expectedChunks: chunkIndex - 1
                   },
                   {
-                    VideoID: VideoID,
+                    videoID: VideoID,
                     resolution: '1080p',
-                    expectedChunks: ChunkIndex - 1
+                    expectedChunks: chunkIndex - 1
                   }
                 ]);
                 
