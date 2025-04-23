@@ -7,11 +7,11 @@ import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import db from '../db.js';
 import videoProcessingQueue from "../../VideoStorage/queues/VideoProcessingQueue.js";
+import ResolutionProcessing from "../models/ResolutionSchema.js";
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 export const processVideo = async({ filename, s3Url, VideoID})=>{
     try{
-
         const response= await axios({
             method: "get",
             url: s3Url,
@@ -79,6 +79,24 @@ export const processVideo = async({ filename, s3Url, VideoID})=>{
                   });
                 }
                 
+               
+                await ResolutionProcessing.insertMany([
+                  {
+                    VideoID: VideoID,
+                    resolution: '360p',
+                    expectedChunks: ChunkIndex - 1
+                  },
+                  {
+                    VideoID: VideoID,
+                    resolution: '720p',
+                    expectedChunks: ChunkIndex - 1
+                  },
+                  {
+                    VideoID: VideoID,
+                    resolution: '1080p',
+                    expectedChunks: ChunkIndex - 1
+                  }
+                ]);
                 
                 console.log("the DATA OF THE cHUNKS IS DEFINED AS THE ", hlsChunk);
                 const hlsFileContent = [

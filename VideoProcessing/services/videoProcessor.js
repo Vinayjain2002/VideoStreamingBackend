@@ -4,6 +4,9 @@ import fs, { chownSync } from 'fs';
 import path from "path";
 import { uploadToS3 } from "./s3Uploader.js";
 import db from '../Database/sql.js';
+import ChunkProcessing from "../../VideoWorker/models/chunkProcessingSchema.js";
+import ResolutionProcessing from "../../VideoWorker/models/ResolutionSchema.js";
+import { M38Queue } from "../queue/M3U8Queue.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -32,7 +35,8 @@ export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) =
     for (const res of resolutions) {
       console.log(res);
       console.log(res.name);
-      const outputFileName = `video/${VideoID}/chunk/chunk-${ChunkIndex}.ts`;
+      const outputFileName = `temp/video/${VideoID}/chunk/chunk-${ChunkIndex}.ts`;
+      const readFileName= `temp/video/${VideoID}/chunk/chunk-${ChunkIndex}.ts`;
       const tempInputPath = path.join("temp", filename);
       console.log(tempInputPath);
       
@@ -54,9 +58,39 @@ export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) =
             .output(outputFileName)
             .on("end", async () => {
               try {
-                const fileBuffer = fs.readFileSync(outputFileName);
+                const fileBuffer = fs.readFileSync(readFileName);
                 const ChunkS3Url = await uploadToS3(outputFileName, fileBuffer);
+                const chunkProcessingData= new ChunkProcessing.create({
+                  VideoID: VideoID,
+                  resolution: res,
+                  chunkIndex: ChunkIndex,
+                  chunkS3Url: ChunkS3Url,
+                  processed: true
+                });
+                await chunkProcessingData.save();
+                
+                const updatedResolutionProcessing = await ResolutionProcessing.findOneAndUpdate(
+                  { videoID: VideoID, resolution: res },
+                  {
+                    $inc: { uploadedChunks: 1 },
+                    $push: { chunksS3Urls: ChunkS3Url }
+                  },
+                  { new: true } // returns the updated document
+                );
+                
 
+                // Trying to Get is the No of the Chunks Exactly Matched
+                const resolutedChunks= await ResolutionProcessing.findOne({videoID: VideoID, resolution: res});
+                if(resolutedChunks.expectedChunks== resolutedChunks.uploadedChunks){
+                  // We need to Add the Element in the Queue of the M3U8 one
+                  await M38Queue.add("M38Queue", {
+                    VideoID: VideoID,
+                    resolution: res,
+                    S3Urls:  resolutedChunks.chunksS3Urls
+                  });
+                }
+                console.log(updatedResolutionProcessing);
+                
                 // Insert into the database
                 await db.query(
                   `INSERT INTO video_chunks (videoID, resolution, chunkIndex, chunkFilePath, chunkSize, processingStatus) 

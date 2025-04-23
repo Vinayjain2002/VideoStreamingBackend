@@ -6,7 +6,8 @@ const resolutionProcessingSchema= new mongoose.Schema({
         required: true
     },
     resolution: {
-        type: String
+        type: String,
+        requried: true
     },
     expectedChunks: {
         type: Number,
@@ -27,12 +28,7 @@ const resolutionProcessingSchema= new mongoose.Schema({
     lastUpdatedAt: {
         type: Date,
         default: Date.now
-    },
-    chunksS3Urls: [
-        {
-            type: String
-        }
-    ]
+    }
 },{timestamps: true});
 
 resolutionProcessingSchema.index({videoID: 1, resolution: 1}, {unique: true});

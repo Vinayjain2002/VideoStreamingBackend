@@ -32,7 +32,7 @@ export const resoluteVideo= async({ chunkS3Url,
 
         console.log("Sending the Vide For the Processing");
         await processVideo(videoBuffer, fileName, VideoID, chunkIndex);
-    
+        
         console.log(`Resolution Changed for Video: ${VideoID}`);
 
     }
