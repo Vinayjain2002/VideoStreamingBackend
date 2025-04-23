@@ -61,8 +61,8 @@ export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) =
                 const fileBuffer = fs.readFileSync(readFileName);
                 const ChunkS3Url = await uploadToS3(outputFileName, fileBuffer);
                 await ChunkProcessing.create({
-                  VideoID: VideoID,
-                  resolution: res,
+                  videoID: VideoID,
+                  resolution: res.name,
                   chunkIndex: ChunkIndex,
                   chunkS3Url: ChunkS3Url,
                   processed: true
@@ -70,7 +70,7 @@ export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) =
                 
                 
                 const updatedResolutionProcessing = await ResolutionProcessing.findOneAndUpdate(
-                  { videoID: VideoID, resolution: res },
+                  { videoID: VideoID, resolution: res.name },
                   {
                     $inc: { uploadedChunks: 1 },
                     $push: { chunksS3Urls: ChunkS3Url }
@@ -85,7 +85,7 @@ export const processVideo = async (inputBuffer, filename, VideoID, ChunkIndex) =
                   // We need to Add the Element in the Queue of the M3U8 one
                   await M38Queue.add("M38Queue", {
                     VideoID: VideoID,
-                    resolution: res,
+                    resolution: res.name,
                     S3Urls:  resolutedChunks.chunksS3Urls
                   });
                 }

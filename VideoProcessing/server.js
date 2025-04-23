@@ -6,7 +6,7 @@ import { ResoltionWorker } from "./Worker/ResolutionWorker.js";
 import connectDB from "./Database/MongoDB.js";
 
 dotenv.config();
-connectDB();
+await connectDB();
 
 console.log("Processing Queu is Working")
 const VideoProcessWorker= new Worker(
